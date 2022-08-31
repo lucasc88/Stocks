@@ -1,25 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
 import { Acoes } from './modelo/acoes';
 import { AcoesService } from './acoes.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-acoes',
   templateUrl: './acoes.component.html',
   styleUrls: ['./acoes.component.css'],
 })
-export class AcoesComponent implements OnInit {
+export class AcoesComponent implements OnInit, OnDestroy {
 
   acoesInput = new FormControl();
-  acoes: Acoes;
 
-  constructor(private acoesService: AcoesService) { }
+  // array of stocks and subscription.unsubscribe() were removed to use pipe async
+  // stocks: Acoes;
+  // private subscription: Subscription;
+  stocks$ = this.stocksService.getAcoes();
 
-  ngOnInit(): void {
-    this.acoesService.getAcoes().subscribe((returnApi) => {
-      this.acoes = returnApi;
-    });
-  }
+  constructor(private stocksService: AcoesService) { }
 
+  ngOnInit(): void { }
+
+  ngOnDestroy(): void { }
 }
