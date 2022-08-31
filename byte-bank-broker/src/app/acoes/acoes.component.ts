@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { Acoes } from './modelo/acoes';
 import { AcoesService } from './acoes.service';
 import { Subscription } from 'rxjs';
+import { switchMap, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-acoes',
@@ -17,7 +18,11 @@ export class AcoesComponent implements OnInit, OnDestroy {
   // array of stocks and subscription.unsubscribe() were removed to use pipe async
   // stocks: Acoes;
   // private subscription: Subscription;
-  stocks$ = this.stocksService.getAcoes();
+  stocks$ = this.acoesInput.valueChanges
+    .pipe(tap(console.log),
+      switchMap(valueTyped => this.stocksService.getAcoes(valueTyped)),
+      tap(console.log)
+    );
 
   constructor(private stocksService: AcoesService) { }
 
