@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 
 import { AcoesService } from './acoes.service';
 import { merge } from 'rxjs';
-import { debounceTime, filter, switchMap, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, switchMap, tap } from 'rxjs/operators';
 
 const TYPING_WAIT = 300;
 
@@ -27,6 +27,7 @@ export class AcoesComponent implements OnInit, OnDestroy {
       tap((typed) => console.log("Filtered flow by: " + typed)),
       tap(console.log),
       filter(filterTyped => filterTyped.length >= 3 || !filterTyped.length),
+      distinctUntilChanged(),// to avoid request using same words
       switchMap(valueTyped => this.stocksService.getAcoes(valueTyped))
     );
 
