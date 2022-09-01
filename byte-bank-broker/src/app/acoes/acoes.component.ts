@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { Acoes } from './modelo/acoes';
 import { AcoesService } from './acoes.service';
-import { Subscription } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { merge } from 'rxjs';
+import { debounceTime, filter, switchMap, tap } from 'rxjs/operators';
+
+const TYPING_WAIT = 300;
 
 @Component({
   selector: 'app-acoes',
@@ -15,13 +16,18 @@ export class AcoesComponent implements OnInit, OnDestroy {
 
   acoesInput = new FormControl();
 
-  // array of stocks and subscription.unsubscribe() were removed to use pipe async
-  // stocks: Acoes;
-  // private subscription: Subscription;
-  stocks$ = this.acoesInput.valueChanges
-    .pipe(tap(console.log),
-      switchMap(valueTyped => this.stocksService.getAcoes(valueTyped)),
-      tap(console.log)
+  allStocks$ = this.stocksService.getAcoes()
+    .pipe(
+      tap(() => console.log("Initial flow"))
+    );
+
+  filterByInput$ = this.acoesInput.valueChanges
+    .pipe(
+      debounceTime(TYPING_WAIT),
+      tap((typed) => console.log("Filtered flow by: " + typed)),
+      tap(console.log),
+      filter(filterTyped => filterTyped.length >= 3 || !filterTyped.length),
+      switchMap(valueTyped => this.stocksService.getAcoes(valueTyped))
     );
 
   constructor(private stocksService: AcoesService) { }
@@ -29,4 +35,15 @@ export class AcoesComponent implements OnInit, OnDestroy {
   ngOnInit(): void { }
 
   ngOnDestroy(): void { }
+
+  // array of stocks and subscription.unsubscribe() were removed to use pipe async
+  // stocks: Acoes;
+  // private subscription: Subscription;
+  // stocks$ = this.acoesInput.valueChanges
+  //   .pipe(tap(console.log),
+  //     switchMap(valueTyped => this.stocksService.getAcoes(valueTyped)),
+  //     tap(console.log)
+  //   );
+
+  stocks$ = merge(this.allStocks$, this.filterByInput$);
 }
